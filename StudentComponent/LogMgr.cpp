@@ -8,8 +8,8 @@
    * the null LSN.
    */
   int LogMgr::getLastLSN(int txnum) {
-      //TODO
-      return 0; //to compile
+     //TODO
+     return 0; //to compile
   }
 
   /*
@@ -17,7 +17,7 @@
    * log entry for this transaction.
    */
   void LogMgr::setLastLSN(int txnum, int lsn) {
-      //TODO
+     //TODO
   }
 
   /*
@@ -26,14 +26,14 @@
    * logtail once they're written!
    */
   void LogMgr::flushLogTail(int maxLSN) {
-      //TODO
+     //TODO
   }
 
 /* 
    * Run the analysis phase of ARIES.
    */
   void LogMgr::analyze(vector <LogRecord*> log) {
-      //TODO
+     //TODO
   }
 
   /*
@@ -43,7 +43,7 @@
    */
   bool LogMgr::redo(vector <LogRecord*> log) {
     //TODO
-      return false //to compile
+      return false; //to compile
   }
 
   /*
@@ -52,7 +52,7 @@
    * Hint: the logic is very similar for these two tasks!
    */
   void LogMgr::undo(vector <LogRecord*> log, int txnum = NULL_TX) {
-      //TODO
+     //TODO
   }
 
 
@@ -79,7 +79,7 @@
    * Commit the specified transaction.
    */
   void LogMgr::commit(int txid) {
-      //TODO
+     //TODO
   }
 
   /*
@@ -88,7 +88,7 @@
    * Remember, you need to implement write-ahead logging
    */
   void LogMgr::pageFlushed(int page_id) {
-      //TODO
+    //TODO
   }
 
   /*
@@ -103,14 +103,15 @@
    * LogMgr should update tables if required and return the LSN of the action performed
    */
   int LogMgr::write(int txid, int page_id, int offset, string input, string oldtext) {
-      //TODO
+     //TODO
+     return 0; //to comple
   }
 
   /*
    * Sets this.se to engine. 
    */
   void LogMgr::setStorageEngine(StorageEngine* engine) {
-      //TODO
+     //TODO
   }
 
 
