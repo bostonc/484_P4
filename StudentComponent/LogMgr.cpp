@@ -2,7 +2,25 @@
 
 //LogMgr Private functions to implement
 
+/*
+   * Find the LSN of the most recent log record for this TX.
+   * If there is no previous log record for this TX, return 
+   * the null LSN.
+   */
+  int getLastLSN(int txnum);
 
+  /*
+   * Update the TX table to reflect the LSN of the most recent
+   * log entry for this transaction.
+   */
+  void setLastLSN(int txnum, int lsn);
+
+  /*
+   * Force log records up to and including the one with the
+   * maxLSN to disk. Don't forget to remove them from the
+   * logtail once they're written!
+   */
+  void flushLogTail(int maxLSN);
 
 
 //LogMgr Public functions to implement
