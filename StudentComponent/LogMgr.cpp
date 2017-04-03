@@ -1,12 +1,4 @@
 #include "LogMgr.h"
-//from LogMgr.h, I think we need them
-#include "LogRecord.h"
-#include <vector>
-#include "../StorageEngine/StorageEngine.h"
-using namespace std;
-
-const int NULL_LSN = -1;
-const int NULL_TX = -1;
 
 //LogMgr Private functions to implement
 
@@ -59,7 +51,7 @@ const int NULL_TX = -1;
    * If a txnum is provided, abort that transaction.
    * Hint: the logic is very similar for these two tasks!
    */
-  void LogMgr::undo(vector <LogRecord*> log, int txnum = NULL_TX) {
+  void LogMgr::undo(vector <LogRecord*> log, int txnum) { //in declaration int txnum = NULL_TX
      //TODO
   }
 
