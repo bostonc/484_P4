@@ -8,7 +8,7 @@
    * the null LSN.
    */
   int LogMgr::getLastLSN(int txnum) {
-    logRecord* last_log_record = logtail[logtail.size() - 1];
+    LogRecord* last_log_record = logtail[logtail.size() - 1];
     if (last_log_record) {
       return last_log_record->lsn;
     }
