@@ -10,7 +10,7 @@
   int LogMgr::getLastLSN(int txnum) {
     LogRecord* last_log_record = logtail[logtail.size() - 1];
     if (last_log_record) {
-      return last_log_record->lsn;
+      return last_log_record->getLSN();
     }
     else {
       return NULL_LSN;
