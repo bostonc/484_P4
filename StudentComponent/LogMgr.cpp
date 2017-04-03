@@ -1,4 +1,12 @@
 #include "LogMgr.h"
+//from LogMgr.h, I think we need them
+#include "LogRecord.h"
+#include <vector>
+#include "../StorageEngine/StorageEngine.h"
+using namespace std;
+
+const int NULL_LSN = -1;
+const int NULL_TX = -1;
 
 //LogMgr Private functions to implement
 
