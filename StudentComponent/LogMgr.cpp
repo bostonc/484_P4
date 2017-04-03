@@ -7,20 +7,55 @@
    * If there is no previous log record for this TX, return 
    * the null LSN.
    */
-  int getLastLSN(int txnum);
+  int LogMgr::getLastLSN(int txnum) {
+      //TODO
+      return 0; //to compile
+  }
 
   /*
    * Update the TX table to reflect the LSN of the most recent
    * log entry for this transaction.
    */
-  void setLastLSN(int txnum, int lsn);
+  void LogMgr::setLastLSN(int txnum, int lsn) {
+      //TODO
+  }
 
   /*
    * Force log records up to and including the one with the
    * maxLSN to disk. Don't forget to remove them from the
    * logtail once they're written!
    */
-  void flushLogTail(int maxLSN);
+  void LogMgr::flushLogTail(int maxLSN) {
+      //TODO
+  }
+
+/* 
+   * Run the analysis phase of ARIES.
+   */
+  void LogMgr::analyze(vector <LogRecord*> log) {
+      //TODO
+  }
+
+  /*
+   * Run the redo phase of ARIES.
+   * If the StorageEngine stops responding, return false.
+   * Else when redo phase is complete, return true. 
+   */
+  bool LogMgr::redo(vector <LogRecord*> log) {
+    //TODO
+      return false //to compile
+  }
+
+  /*
+   * If no txnum is specified, run the undo phase of ARIES.
+   * If a txnum is provided, abort that transaction.
+   * Hint: the logic is very similar for these two tasks!
+   */
+  void LogMgr::undo(vector <LogRecord*> log, int txnum = NULL_TX) {
+      //TODO
+  }
+
+
 
 
 //LogMgr Public functions to implement
