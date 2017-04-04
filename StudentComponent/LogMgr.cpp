@@ -66,6 +66,18 @@
      //TODO
   }
 
+  vector<LogRecord*> stringToLRVector(string logstring) {
+    //given to us in discussion slides
+    vector<LogRecord*> result; 
+    istringstream stream(logstring);
+    string line; 
+    while(getline(stream, line)) {
+      LogRecord* lr = LogRecord::stringToRecordPtr(line);  
+      Results.push_back(lr);
+    }
+    return result;
+  }
+
 
 
 
