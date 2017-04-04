@@ -40,10 +40,9 @@
    */
   void LogMgr::flushLogTail(int maxLSN) {
     //write log records to disk
-    StorageEngine se;
     for (int i = 0; i <= maxLSN; i++) {
       string log_record = logtail[i]->toString();
-      se.updateLog(log_record);
+      this->se.updateLog(log_record);
     }
     //remove the records from logtail
     logtail.erase(logtail.begin(), logtail.begin() + maxLSN);
@@ -54,6 +53,12 @@
    */
   void LogMgr::analyze(vector <LogRecord*> log) {
      //TODO
+    
+    //determine where in the log to start the Redo pass
+    
+    //determine which pages may have been dirty at the time of the crash -> fill dirty_page_table
+    
+    //identify transactions that were active at the time of the crash -> fill tx_table
   }
 
   /*
@@ -143,7 +148,7 @@
    * Sets this.se to engine. 
    */
   void LogMgr::setStorageEngine(StorageEngine* engine) {
-     this.se = engine;
+    this->se = engine;
   }
 
 
