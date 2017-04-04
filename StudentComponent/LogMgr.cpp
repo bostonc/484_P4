@@ -39,7 +39,13 @@
    * logtail once they're written!
    */
   void LogMgr::flushLogTail(int maxLSN) {
-     //TODO
+    //write log records to disk
+    StorageEngine se;
+    for (int i = 0; i <= maxLSN; i++) {
+      string log_record = toString(logtail[i]);
+      se.updateLog(log_record);
+    }
+    //remove the records from logtail
   }
 
 /* 
