@@ -1,4 +1,6 @@
 #include "LogMgr.h"
+#include "assert.h"
+#include <vector>
 
 //LogMgr Private functions to implement
 
