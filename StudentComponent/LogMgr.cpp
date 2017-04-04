@@ -1,4 +1,7 @@
 #include "LogMgr.h"
+#include "assert.h"
+#include <vector>
+#include <sstream>
 
 //LogMgr Private functions to implement
 
@@ -8,13 +11,17 @@
    * the null LSN.
    */
   int LogMgr::getLastLSN(int txnum) {
-    logRecord* last_log_record = logtail[logtail.size() - 1];
-    if (last_log_record) {
-      return last_log_record->lsn;
+    int logtail_size = logtail.size();
+    LogRecord* log_record;
+    //find most recent log record for this TX
+    for (int i = logtail_size - 1; i >= 0; i--) {
+      log_record = logtail[i];
+      assert(log_record);
+      if (log_record->getTxID() == txnum) {
+        return log_record->getLSN();
+      }
     }
-    else {
-      return NULL_LSN;
-    }
+    return NULL_LSN;
   }
 
   /*
@@ -22,7 +29,8 @@
    * log entry for this transaction.
    */
   void LogMgr::setLastLSN(int txnum, int lsn) {
-     //TODO
+    //find entry for this TX and set lsn
+    tx_table[txnum].lastLSN = lsn;
   }
 
   /*
@@ -31,7 +39,13 @@
    * logtail once they're written!
    */
   void LogMgr::flushLogTail(int maxLSN) {
-     //TODO
+    //write log records to disk
+    StorageEngine se;
+    for (int i = 0; i <= maxLSN; i++) {
+      string log_record = logtail[i]->toString();
+      se.updateLog(log_record);
+    }
+    //remove the records from logtail
   }
 
 /* 
@@ -58,6 +72,18 @@
    */
   void LogMgr::undo(vector <LogRecord*> log, int txnum) { //in declaration int txnum = NULL_TX
      //TODO
+  }
+
+  vector<LogRecord*> stringToLRVector(string logstring) {
+    //given to us in discussion slides
+    vector<LogRecord*> result; 
+    istringstream stream(logstring);
+    string line; 
+    while(getline(stream, line)) {
+      LogRecord* lr = LogRecord::stringToRecordPtr(line);  
+      result.push_back(lr); //slides said "Results" but I think it should be "result"
+    }
+    return result;
   }
 
 
