@@ -30,7 +30,7 @@
    */
   void LogMgr::setLastLSN(int txnum, int lsn) {
     //find entry for this TX and set lsn
-    tx_table[txnum]->lastLSN = lsn;
+    tx_table[txnum].lastLSN = lsn;
   }
 
   /*
