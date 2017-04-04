@@ -42,7 +42,7 @@
     //write log records to disk
     StorageEngine se;
     for (int i = 0; i <= maxLSN; i++) {
-      string log_record = logtail[i].toString();
+      string log_record = logtail[i]->toString();
       se.updateLog(log_record);
     }
     //remove the records from logtail
