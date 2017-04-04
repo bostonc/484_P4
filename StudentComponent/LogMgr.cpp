@@ -42,7 +42,7 @@
     //write log records to disk
     for (int i = 0; i <= maxLSN; i++) {
       string log_record = logtail[i]->toString();
-      this->se.updateLog(log_record);
+      this->se->updateLog(log_record);
     }
     //remove the records from logtail
     logtail.erase(logtail.begin(), logtail.begin() + maxLSN);
