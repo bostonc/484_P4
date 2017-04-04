@@ -143,7 +143,7 @@
    * Sets this.se to engine. 
    */
   void LogMgr::setStorageEngine(StorageEngine* engine) {
-     //TODO
+     this.se = engine;
   }
 
 
