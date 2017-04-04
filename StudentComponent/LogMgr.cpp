@@ -10,7 +10,8 @@
    * If there is no previous log record for this TX, return 
    * the null LSN.
    */
-  int LogMgr::getLastLSN(int txnum) {
+  int LogMgr::getLastLSN(int txnum) 
+  {	
     int logtail_size = logtail.size();
     LogRecord* log_record;
     //find most recent log record for this TX
@@ -28,8 +29,10 @@
    * Update the TX table to reflect the LSN of the most recent
    * log entry for this transaction.
    */
-  void LogMgr::setLastLSN(int txnum, int lsn) {
+  void LogMgr::setLastLSN(int txnum, int lsn) 
+  {	
     //find entry for this TX and set lsn
+	
     tx_table[txnum].lastLSN = lsn;
   }
 
@@ -38,7 +41,8 @@
    * maxLSN to disk. Don't forget to remove them from the
    * logtail once they're written!
    */
-  void LogMgr::flushLogTail(int maxLSN) {
+  void LogMgr::flushLogTail(int maxLSN) 
+  {	
     //write log records to disk
     for (int i = 0; i <= maxLSN; i++) {
       string log_record = logtail[i]->toString();
