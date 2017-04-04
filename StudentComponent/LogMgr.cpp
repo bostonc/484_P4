@@ -34,7 +34,7 @@
     assert(it != tx_table.end());
     tx_table.erase(it);
     //insert new entry for this TX with given lsn
-    const txTableEntry update_entry(lsn, U);
+    txTableEntry update_entry(lsn, U) const;
     tx_table.insert(pair<txnum, update_entry>);
   }
 
