@@ -31,8 +31,7 @@ int LogMgr::getLastLSN(int txnum)
 */
 void LogMgr::setLastLSN(int txnum, int lsn) 
 {	
-	//find entry for this TX and set lsn
-	
+	//find entry for this TX and set lsn	
 	tx_table[txnum].lastLSN = lsn;
 }
 
@@ -49,7 +48,7 @@ void LogMgr::flushLogTail(int maxLSN)
 		this->se->updateLog(log_record);
 	}
 	//remove the records from logtail
-	logtail.erase(logtail.begin(), logtail.begin() + maxLSN);
+	logtail.erase(logtail.begin(), logtail.begin() + maxLSN); //OFF BY ONE????
 }
 
 /* 
@@ -105,8 +104,10 @@ vector<LogRecord*> LogMgr::stringToLRVector(string logstring) {
 * Abort the specified transaction.
 * Hint: you can use your undo function
 */
-void LogMgr::abort(int txid) {
-	//TODO
+void LogMgr::abort(int txid) 
+{
+	undo(logtail, txid);
+	//ANY CLR ENTRIES SHOULD BE HANDLED IN UNDO, NOT HERE.....................
 }
 
 /*
