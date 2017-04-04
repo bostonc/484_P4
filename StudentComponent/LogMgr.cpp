@@ -120,8 +120,23 @@ void LogMgr::checkpoint() {
 /*
 * Commit the specified transaction.
 */
-void LogMgr::commit(int txid) {
-    //TODO
+void LogMgr::commit(int txid) 
+{
+	//write commit to log tail
+
+
+    //write all txid log records + commit to disk
+	//include all records up to and including txid's lastLSN
+
+	//drop locks?
+
+	//change tx status from U to C
+
+
+	//remove transaction from transaction table
+
+
+	//write end record
 }
 
 /*
