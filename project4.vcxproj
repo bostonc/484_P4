@@ -99,6 +99,7 @@
   <ItemGroup>
     <ClCompile Include="storageengine\main.cpp" />
     <ClCompile Include="storageengine\StorageEngine.cpp" />
+    <ClCompile Include="StudentComponent\LogMgr.cpp" />
     <ClCompile Include="studentcomponent\LogRecord.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -24,6 +24,9 @@
     <ClCompile Include="studentcomponent\LogRecord.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StudentComponent\LogMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="storageengine\StorageEngine.h">
