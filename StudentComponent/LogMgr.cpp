@@ -84,7 +84,7 @@
      //TODO
   }
 
-  vector<LogRecord*> stringToLRVector(string logstring) {
+  vector<LogRecord*> LogMgr::stringToLRVector(string logstring) {
     //given to us in discussion slides
     vector<LogRecord*> result; 
     istringstream stream(logstring);
