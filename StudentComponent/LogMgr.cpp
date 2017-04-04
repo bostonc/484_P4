@@ -1,6 +1,7 @@
 #include "LogMgr.h"
 #include "assert.h"
 #include <vector>
+#include <sstream>
 
 //LogMgr Private functions to implement
 
@@ -73,7 +74,7 @@
     string line; 
     while(getline(stream, line)) {
       LogRecord* lr = LogRecord::stringToRecordPtr(line);  
-      Results.push_back(lr);
+      result.push_back(lr); //slides said "Results" but I think it should be "result"
     }
     return result;
   }
