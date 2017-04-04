@@ -107,7 +107,7 @@ vector<LogRecord*> LogMgr::stringToLRVector(string logstring) {
 void LogMgr::abort(int txid) 
 {
 	undo(logtail, txid);
-	//ANY CLR ENTRIES SHOULD BE HANDLED IN UNDO, NOT HERE.....................
+	//ANY CLR ENTRIES SHOULD BE CREATED IN UNDO, NOT HERE.....................
 }
 
 /*
@@ -152,7 +152,8 @@ int LogMgr::write(int txid, int page_id, int offset, string input, string oldtex
 /*
 * Sets this.se to engine. 
 */
-void LogMgr::setStorageEngine(StorageEngine* engine) {
+void LogMgr::setStorageEngine(StorageEngine* engine) 
+{
 	this->se = engine;
 }
 
