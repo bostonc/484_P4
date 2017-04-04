@@ -29,13 +29,8 @@
    * log entry for this transaction.
    */
   void LogMgr::setLastLSN(int txnum, int lsn) {
-    //find last entry for this TX and erase it
-    map <int, txTableEntry>::iterator it = tx_table.find(txnum);
-    assert(it != tx_table.end());
-    tx_table.erase(it);
-    //insert new entry for this TX with given lsn
-    txTableEntry update_entry(lsn, U) const;
-    tx_table.insert(pair<txnum, update_entry>);
+    //find entry for this TX and set lsn
+    tx_table[txnum]->lastLSN = lsn;
   }
 
   /*
