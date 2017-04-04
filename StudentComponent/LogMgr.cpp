@@ -46,6 +46,7 @@
       se.updateLog(log_record);
     }
     //remove the records from logtail
+    logtail.erase(logtail.begin(), logtail.begin() + maxLSN);
   }
 
 /* 
