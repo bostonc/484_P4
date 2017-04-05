@@ -169,6 +169,7 @@ void LogMgr::commit(int txid)
 void LogMgr::pageFlushed(int page_id) 
 {
 	flushLogTail(se->getLSN(page_id));
+	dirty_page_table.erase(page_id);
 }
 
 /*
