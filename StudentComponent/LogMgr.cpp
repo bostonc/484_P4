@@ -183,9 +183,27 @@ void LogMgr::recover(string log) {
 * Called by StorageEngine whenever an update is called
 * LogMgr should update tables if required and return the LSN of the action performed
 */
-int LogMgr::write(int txid, int page_id, int offset, string input, string oldtext) {
-    //TODO
-    return 0; //to comple
+int LogMgr::write(int txid, int page_id, int offset, string input, string oldtext) 
+{
+	//write update record
+	int newLSN = se->nextLSN();
+	LogRecord* uRec = new LogRecord(newLSN, getLastLSN(txid), txid, END);
+	logtail.push_back(uRec);
+
+	//update tx_table, add new entry if needed
+	tx_table[txid].lastLSN = newLSN;
+	tx_table[txid].status = U;
+
+	//check for page table entry, add one if needed.
+	try
+	{
+		dirty_page_table.at(page_id);
+	}
+	catch (const std::out_of_range& e)
+	{
+		dirty_page_table[page_id] = newLSN;
+	}
+    return newLSN;
 }
 
 /*
