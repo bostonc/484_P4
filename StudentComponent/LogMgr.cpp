@@ -70,7 +70,17 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 * Else when redo phase is complete, return true. 
 */
 bool LogMgr::redo(vector <LogRecord*> log) {
-	//TODO
+	
+	//Find oldest update in log(smallest recLSN) and start at that point in the log
+	//	For each redoable record :
+	//Is the page in dirty page table ?
+	//	Is recLSN for the page is less than or equal to the LSN of the current record ?
+	//	Is the pageLSN less than the LSN of the log record ?
+	//	If it yes for all three, redo the record
+	//	Remove committed transactions from table
+
+
+
     return false; //to compile
 }
 
@@ -80,7 +90,15 @@ bool LogMgr::redo(vector <LogRecord*> log) {
 * Hint: the logic is very similar for these two tasks!
 */
 void LogMgr::undo(vector <LogRecord*> log, int txnum) { //in declaration int txnum = NULL_TX
-    //TODO
+	//Undo all in the transaction table starting with the transaction with the largest LSN value in transaction table
+	//	For each record :
+	//If update :
+	//Create a CLR record in the log.Add end record if undoNext is null
+	//	Add prevLSN to set to undo
+	//	If CLR :
+	//If undoNextLSN is null, add end record to log
+	//	Otherwise, add undoNextLSN to the set to undo
+
 }
 
 vector<LogRecord*> LogMgr::stringToLRVector(string logstring) {
@@ -121,22 +139,23 @@ void LogMgr::checkpoint() {
 * Commit the specified transaction.
 */
 void LogMgr::commit(int txid) 
-{
+{ //see pg 574 of textbook edition 2
 	//write commit to log tail
+	int newLSN = se->nextLSN();
+	LogRecord* cRec = new LogRecord(newLSN, getLastLSN(txid), txid, COMMIT);
+	logtail.push_back(cRec);
+	setLastLSN(txid, newLSN);
 
-
-    //write all txid log records + commit to disk
+    //write log tail to disk
 	//include all records up to and including txid's lastLSN
-
-	//drop locks?
-
-	//change tx status from U to C
-
+	flushLogTail(newLSN);
 
 	//remove transaction from transaction table
-
+	tx_table.erase(txid);
 
 	//write end record
+	LogRecord* eRec = new LogRecord(se->nextLSN(), getLastLSN(txid), txid, END);
+	logtail.push_back(eRec);
 }
 
 /*
