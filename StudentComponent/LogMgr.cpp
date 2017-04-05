@@ -166,8 +166,9 @@ void LogMgr::commit(int txid)
 * write a page to disk. 
 * Remember, you need to implement write-ahead logging
 */
-void LogMgr::pageFlushed(int page_id) {
-	//TODO
+void LogMgr::pageFlushed(int page_id) 
+{
+	flushLogTail(se->getLSN(page_id));
 }
 
 /*
