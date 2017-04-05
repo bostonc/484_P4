@@ -140,6 +140,9 @@ void LogMgr::checkpoint() {
 */
 void LogMgr::commit(int txid) 
 { //see pg 574 of textbook edition 2
+	//change status
+	tx_table[txid].status = C;
+
 	//write commit to log tail
 	int newLSN = se->nextLSN();
 	LogRecord* cRec = new LogRecord(newLSN, getLastLSN(txid), txid, COMMIT);
@@ -150,12 +153,12 @@ void LogMgr::commit(int txid)
 	//include all records up to and including txid's lastLSN
 	flushLogTail(newLSN);
 
-	//remove transaction from transaction table
-	tx_table.erase(txid);
-
 	//write end record
 	LogRecord* eRec = new LogRecord(se->nextLSN(), getLastLSN(txid), txid, END);
 	logtail.push_back(eRec);
+
+	//remove transaction from tx table
+	tx_table.erase(txid);
 }
 
 /*
