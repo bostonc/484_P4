@@ -74,9 +74,9 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 	}
 	assert(end > begin); //possibly also check and do something if end != begin + 1
 	//set dirty page table and transaction table to what they were at the end checkpoint
-	dynamic_cast<ChkptLogRecord*>(log[end]);
-	dirty_page_table = log[end]->getDirtyPageTable();
-	tx_table = log[end]->getDirtyPageTable();
+	ChkptLogRecord* log_end = dynamic_cast<ChkptLogRecord*>(log[end]);
+	dirty_page_table = log_end->getDirtyPageTable();
+	tx_table = log_end->getDirtyPageTable();
 	
 	//after end, go through the rest of the log and update transaction table and dirty page table
 	for (int i = end + 1; i < log_size; i++) {
