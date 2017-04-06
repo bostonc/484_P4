@@ -2,6 +2,7 @@
 #include "assert.h"
 #include <vector>
 #include <sstream>
+#include <string>
 
 //LogMgr Private functions to implement
 
@@ -150,13 +151,78 @@ bool LogMgr::redo(vector <LogRecord*> log)
 	//	Is the pageLSN less than the LSN of the log record ?
 	//	If it yes for all three, redo the record
 	//	Remove committed transactions from table
+	assert(log.size > 0);
 
+	map<int, int>* dpt = &dirty_page_table;
+	int startingLSN = NULL_LSN;
+	int startingLogIdx = -1;
 
+	//find smallest recLSN in dirty_page_table
+	for (map<int, int>::iterator it = dpt->begin(); it != dpt->end(); ++it)
+	{
+		if (startingLSN == NULL_LSN) startingLSN = it->second; //should only happen once
+		if (startingLSN > it->second) startingLSN = it->second;		
+	}
 
+	//find vector index of log record with startingLSN
+	for (int i = 0; i < log.size(); ++i)
+	{
+		if (log[i]->getLSN() == startingLSN)
+		{
+			startingLogIdx = i;
+			break;
+		}
+	}
 
+	//scan forward starting with startingLogIdx, REDO where necessary
+	for (int i = startingLogIdx; i < log.size(); ++i)
+	{
+		//check type, find affected page if applicable
+		int affectedPage = -1;
+		UpdateLogRecord* updateLog = nullptr;
+		CompensationLogRecord* clr = nullptr;
+		switch (log[i]->getType())
+		{
+		case UPDATE:
+			updateLog = dynamic_cast<UpdateLogRecord*>(log[i]);
+			affectedPage = updateLog->getPageID();
+			break;
+		case CLR: 
+			clr = dynamic_cast<CompensationLogRecord*>(log[i]);
+			affectedPage = clr->getPageID();
+			break;
+		default:
+			continue;
+		}
 
+		//is affected page in the DPT?
+		try	{ dpt->at(affectedPage); }
+		catch (const std::out_of_range& e) { continue; }
 
-    return false; //to compile
+		//is dpt recLSN greater than the LSN of the log record being checked?
+		if (dpt->at(affectedPage) > log[i]->getLSN()) continue;
+
+		//is pageLSN greater than or equal to the LSN of the log record being checked?
+		if (se->getLSN(affectedPage) >= log[i]->getLSN()) continue;
+
+		//get redo info
+		int off = -1;
+		string text = "";
+		if (updateLog)
+		{
+			off = updateLog->getOffset();
+			text = updateLog->getAfterImage();
+		}
+		else //CLR
+		{
+			off = clr->getOffset();
+			text = clr->getAfterImage();
+		}
+
+		//attempt REDO
+		if (!se->pageWrite(affectedPage, off, text, log[i]->getLSN())) return false;
+	}//end for loop (log scan)	
+    return true;
 }
 
 /*
