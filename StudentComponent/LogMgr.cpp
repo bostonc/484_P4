@@ -55,13 +55,38 @@ void LogMgr::flushLogTail(int maxLSN)
 * Run the analysis phase of ARIES.
 */
 void LogMgr::analyze(vector <LogRecord*> log) {
-    //TODO
-    
-	//determine where in the log to start the Redo pass
-    
-	//determine which pages may have been dirty at the time of the crash -> fill dirty_page_table
-    
-	//identify transactions that were active at the time of the crash -> fill tx_table
+	//find last begin checkpoint
+	int log_size = log.size();
+	int begin = 0;
+	for (int i = log_size - 1; i >= 0; i--) {
+		if (log[i]->getType() == BEGIN_CKPT) {
+			begin = i;
+			break;
+		}
+	}
+	//find last end checkpoint
+	int end = 0;
+	for (int j = log_size - 1; j >= 0; j--) {
+		if (log[j]->getType() == END_CKPT) {
+			end = j;
+			break;
+		}
+	}
+	assert(end > begin); //possibly also check and do something if end != begin + 1
+	//set dirty page table and transaction table to what they were at the end checkpoint
+	dirty_page_table = log[end]->getDirtyPageTable();
+	tx_table = log[end]->getDirtyPageTable();
+	
+	//after end, go through the rest of the log and update transaction table and dirty page table
+	for (int i = end + 1; i < log_size; i++) {
+		//if we find an end log record, remove that transaction from the transaction table
+		if (log[i]->getType == END) {
+			int tx = log[i]->getTxID();
+			tx_table.erase(tx);
+		}
+	}
+		
+
 }
 
 /*
