@@ -1,8 +1,42 @@
 #include "LogMgr.h"
 #include "assert.h"
+#include <queue>
 #include <vector>
 #include <sstream>
 #include <string>
+
+//Helper Functions
+
+//returns pointer to a log record, given a log vector & a LSN
+//scans forward
+LogRecord* getRecordFromLSN_forward(vector <LogRecord*> log, int lsn)
+{
+	for (int i = 0; i < (int)log.size(); ++i)
+	{
+		if (log[i]->getLSN() == lsn) return log[i];
+	}
+}
+
+//returns pointer to a log record, given a log vector & a LSN
+//scans backward
+LogRecord* getRecordFromLSN_backward(vector <LogRecord*> log, int lsn)
+{
+	for (int i = log.size() - 1; i >= 0; --i)
+	{
+		if (log[i]->getLSN() == lsn) return log[i];
+	}
+}
+
+//returns pointer to a log record, given a sorted log vector and a tx_id
+LogRecord* getLatestRecordFromTxId(vector <LogRecord*> log, int txid)
+{
+	for (int i = log.size() - 1; i >= 0; --i)
+	{
+		if (log[i]->getTxID() == txid) return log[i];
+	}
+}
+
+
 
 //LogMgr Private functions to implement
 
@@ -261,7 +295,8 @@ bool LogMgr::redo(vector <LogRecord*> log)
 * If a txnum is provided, abort that transaction.
 * Hint: the logic is very similar for these two tasks!
 */
-void LogMgr::undo(vector <LogRecord*> log, int txnum) { //in declaration int txnum = NULL_TX
+void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_TX
+{ 
 	//Undo all in the transaction table starting with the transaction with the largest LSN value in transaction table
 	//	For each record :
 	//If update :
@@ -271,6 +306,60 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) { //in declaration int txn
 	//If undoNextLSN is null, add end record to log
 	//	Otherwise, add undoNextLSN to the set to undo
 
+	//create ToUndo
+	priority_queue<int> ToUndo;
+	LogRecord* currLog;
+	if (txnum == NULL_TX)
+	{	//initialize for undo phase
+		for (map<int, txTableEntry>::iterator it = tx_table.begin(); it != tx_table.end(); ++it)
+		{
+			ToUndo.push(it->second.lastLSN);
+		}
+	}
+	else
+	{	//initialize for single abort.
+		//find targetLog with tx_id
+		currLog = getLatestRecordFromTxId(log, txnum);
+		//add largeset LSN of targetLog to ToUndo
+		ToUndo.push(currLog->getLSN());
+	}
+
+	//scan backwards from startingLSN
+	while (!ToUndo.empty())
+	{
+		//find log record with LSN == largest LSN of ToUndo
+		currLog = getRecordFromLSN_backward(log, ToUndo.top());
+
+		switch (currLog->getType())
+		{
+		case CLR: //WRONG. NEED TO CASE TO CLR AND USE LAST FIELD
+			CompensationLogRecord* curr_clr = dynamic_cast<CompensationLogRecord*>(currLog);
+			if (curr_clr->getUndoNextLSN() != NULL_LSN)
+			{
+				ToUndo.push(curr_clr->getUndoNextLSN());
+				ToUndo.pop();
+				continue;
+			}
+			//write end record
+			LogRecord* endRec = new LogRecord(se->nextLSN(), curr_clr->getLSN(), curr_clr->getTxID(), END);
+			logtail.push_back(endRec);
+			ToUndo.pop();
+			continue;
+		case UPDATE:
+			//write CLR
+			UpdateLogRecord* curr_uplr = dynamic_cast<UpdateLogRecord*>(currLog);
+			int nextLSN = se->nextLSN();
+			CompensationLogRecord * clr = new CompensationLogRecord(nextLSN, curr_uplr->getLSN(),
+				curr_uplr->getTxID(), curr_uplr->getPageID(), curr_uplr->getOffset(), 
+				curr_uplr->getBeforeImage(), curr_uplr->getprevLSN()); //MIGHT HAVE BUGS
+			//undo action
+			se->pageWrite(curr_uplr->getPageID(), curr_uplr->getOffset(), curr_uplr->getBeforeImage(), nextLSN);
+			break;
+		default: break;
+		}
+		ToUndo.pop();
+		if (currLog->getprevLSN() != NULL_LSN) ToUndo.push(currLog->getprevLSN());
+	} //end backwards scan (while loop)
 }
 
 vector<LogRecord*> LogMgr::stringToLRVector(string logstring) {
@@ -362,7 +451,6 @@ void LogMgr::pageFlushed(int page_id)
 * Recover from a crash, given the log from the disk.
 */
 void LogMgr::recover(string log) 
-	//anything else we need to do??
 {
 	//convert to vector
 	vector<LogRecord*> log_record = stringToLRVector(log);
@@ -371,7 +459,7 @@ void LogMgr::recover(string log)
 	analyze(log_record);
 
 	//redo
-	redo(log_record);
+	if (!redo(log_record)) return;
 
 	//undo
 	undo(log_record);
