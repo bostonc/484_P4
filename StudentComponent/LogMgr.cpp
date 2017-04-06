@@ -118,7 +118,8 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 			int page_id = log_i->getPageID();
 			if (dirty_page_table.find(page_id) == dirty_page_table.end()) {
 				//add the page to the table
-				dirty_page_table.insert(page_id, log_i->getLSN());
+				int lsn = log_i->getLSN();
+				dirty_page_table.insert(pair<int, int>(page_id, lsn));
 			}
 		}
 		else if (log[i]->getType() == CLR) {
@@ -126,7 +127,8 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 			int page_id = log_i->getPageID();
 			if (dirty_page_table.find(page_id) == dirty_page_table.end()) {
 				//add the page to the table
-				dirty_page_table.insert(page_id, log_i->getLSN());
+				int lsn = log_i->getLSN();
+				dirty_page_table.insert(pair<int, int>(page_id, lsn));
 			}
 		}
 	}
