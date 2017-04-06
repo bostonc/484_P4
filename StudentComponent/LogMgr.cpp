@@ -141,8 +141,8 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 * If the StorageEngine stops responding, return false.
 * Else when redo phase is complete, return true. 
 */
-bool LogMgr::redo(vector <LogRecord*> log) {
-	
+bool LogMgr::redo(vector <LogRecord*> log) 
+{	
 	//Find oldest update in log(smallest recLSN) and start at that point in the log
 	//	For each redoable record :
 	//Is the page in dirty page table ?
@@ -150,6 +150,9 @@ bool LogMgr::redo(vector <LogRecord*> log) {
 	//	Is the pageLSN less than the LSN of the log record ?
 	//	If it yes for all three, redo the record
 	//	Remove committed transactions from table
+
+
+
 
 
 
