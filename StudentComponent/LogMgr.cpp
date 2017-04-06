@@ -84,6 +84,32 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 			int tx = log[i]->getTxID();
 			tx_table.erase(tx);
 		}
+		//if it's any other type of record, add that transaction to the transaction table if it's not already there
+		else {
+			int tx = log[i]->getTxID();
+			if (tx_table.find(tx) == tx_table.end()) {
+				//add the transaction to the table
+				TxStatus status;
+				if (log[i]->getType() == COMMIT) {
+					status = C;
+				}
+				else {
+					status = U;
+				}
+				txTableEntry new_tx(log[i]->getLSN(), status);
+				tx_table.insert(pair<int, txTableEntry>(tx, new_tx));
+			}
+			else {
+				//update the transaction in the table
+				tx_table[tx].lastLSN = log[i]->getLSN();
+				if (log[i]->getType() == COMMIT) {
+					tx_table[tx].status = C;
+				}
+				else {
+					tx_table[tx].status = U;
+				}
+			}
+		}
 	}
 		
 
