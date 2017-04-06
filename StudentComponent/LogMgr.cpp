@@ -110,6 +110,15 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 				}
 			}
 		}
+		//if its a redoable log record with a page that's not in the dirty page table, add it
+		//redoable log record = UPDATE, CLR, is that it?
+		if (log[i]->getType() == UPDATE || log[i]->getType() == CLR) {
+			int page_id = log[i]->getPageID();
+			if (dirty_page_table.find(page_id) == dirty_page_table.end()) {
+				//add the page to the table
+				dirty_page_table.insert(page_id, log[i]->getLSN());
+			}
+		}
 	}
 		
 
