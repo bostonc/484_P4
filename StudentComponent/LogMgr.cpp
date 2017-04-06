@@ -257,7 +257,7 @@ int LogMgr::write(int txid, int page_id, int offset, string input, string oldtex
 {
 	//write update record
 	int newLSN = se->nextLSN();
-	LogRecord* uRec = new LogRecord(newLSN, getLastLSN(txid), txid, END);
+	UpdateLogRecord* uRec = new UpdateLogRecord(newLSN, getLastLSN(txid), txid, page_id, offset, oldtext, input);
 	logtail.push_back(uRec);
 
 	//update tx_table, add new entry if needed
