@@ -348,8 +348,15 @@ void LogMgr::pageFlushed(int page_id)
 /*
 * Recover from a crash, given the log from the disk.
 */
-void LogMgr::recover(string log) {
-	//TODO
+void LogMgr::recover(string log) 
+{
+	//convert to vector
+
+	//analyze
+
+	//redo
+
+	//undo
 }
 
 /*
