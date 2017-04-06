@@ -132,7 +132,26 @@ void LogMgr::abort(int txid)
 * Write the begin checkpoint and end checkpoint
 */
 void LogMgr::checkpoint() {
-	//TODO
+	//write begin checkpoint to the logtail
+	int begin_lsn = se->nextLSN();
+	LogRecord* begin_checkpoint = new LogRecord(begin_lsn, NULL_LSN, NULL_TX, BEGIN_CKPT);
+	logtail.push_back(begin_checkpoint);
+	
+	//write end checkpoint to the logtail
+	int end_lsn = se->nextLSN()
+	LogRecord* end_checkpoint = new ChkptLogRecord(end_lsn, begin_lsn, NULL_TX, tx_table, dirty_page_table);
+	logtail.push_back(end_checkpoint);
+	
+	//write end checkpoint to stable storage
+	bool written = false;
+	if (se->store_master(end_lsn)) {
+		written = true;
+	}
+	assert(written);
+	
+	//flush the logtail up to and including begin checkpoint 
+	flushLogTail(begin_lsn);
+	
 }
 
 /*
