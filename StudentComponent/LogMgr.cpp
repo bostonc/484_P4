@@ -138,8 +138,8 @@ void LogMgr::checkpoint() {
 	logtail.push_back(begin_checkpoint);
 	
 	//write end checkpoint to the logtail
-	int end_lsn = se->nextLSN()
-	LogRecord* end_checkpoint = new ChkptLogRecord(end_lsn, begin_lsn, NULL_TX, tx_table, dirty_page_table);
+	int end_lsn = se->nextLSN();
+	ChkptLogRecord* end_checkpoint = new ChkptLogRecord(end_lsn, begin_lsn, NULL_TX, tx_table, dirty_page_table);
 	logtail.push_back(end_checkpoint);
 	
 	//write end checkpoint to stable storage
