@@ -211,17 +211,12 @@ void LogMgr::checkpoint() {
 	int end_lsn = se->nextLSN();
 	ChkptLogRecord* end_checkpoint = new ChkptLogRecord(end_lsn, begin_lsn, NULL_TX, tx_table, dirty_page_table);
 	logtail.push_back(end_checkpoint);
+
+	//flush the logtail
+	flushLogTail(end_lsn); //UP TO WHICH CHECKPOINT???
 	
-	//write end checkpoint to stable storage
-	bool written = false;
-	if (se->store_master(end_lsn)) {
-		written = true;
-	}
-	assert(written);
-	
-	//flush the logtail up to and including begin checkpoint 
-	flushLogTail(begin_lsn);
-	
+	//record master
+	se->store_master(begin_lsn); //should be begin LSN
 }
 
 /*
