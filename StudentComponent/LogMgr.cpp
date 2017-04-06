@@ -57,7 +57,7 @@ void LogMgr::flushLogTail(int maxLSN)
 void LogMgr::analyze(vector <LogRecord*> log) {
 	//find last begin checkpoint
 	int log_size = log.size();
-	int begin = 0;
+	int begin = -2;
 	for (int i = log_size - 1; i >= 0; i--) {
 		if (log[i]->getType() == BEGIN_CKPT) {
 			begin = i;
@@ -65,7 +65,7 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 		}
 	}
 	//find last end checkpoint
-	int end = 0;
+	int end = -1; //I think this handles if there's no checkpoints made yet
 	for (int j = log_size - 1; j >= 0; j--) {
 		if (log[j]->getType() == END_CKPT) {
 			end = j;
@@ -217,6 +217,7 @@ void LogMgr::checkpoint() {
 	ChkptLogRecord* end_checkpoint = new ChkptLogRecord(end_lsn, begin_lsn, NULL_TX, tx_table, dirty_page_table);
 	logtail.push_back(end_checkpoint);
 
+	//Hey I saw you switched stuff, I'm not sure about it
 	//flush the logtail
 	flushLogTail(end_lsn); //UP TO WHICH CHECKPOINT???
 	
