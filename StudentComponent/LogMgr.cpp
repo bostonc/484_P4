@@ -57,32 +57,41 @@ void LogMgr::flushLogTail(int maxLSN)
 */
 void LogMgr::analyze(vector <LogRecord*> log) {
 	//find last begin checkpoint
-	int begin_lsn = se->get_master();
 	int log_size = log.size();
 	int begin = -1;
-	for (int i = log_size - 1; i >= 0; i--) {
-		if (log[i]->getLSN() == begin_lsn) {
-			begin = i;
-			break;
+	int end = -1;
+	int begin_lsn = se->get_master();
+	//check if there's been a checkpoint made yet
+	if (begin_lsn!= -1) {
+		for (int i = log_size - 1; i >= 0; i--) {
+			if (log[i]->getLSN() == begin_lsn) {
+				begin = i;
+				break;
+			}
 		}
-	}
-	assert(begin != -1);
-	//find last end checkpoint
-	int end = -1; //I think this handles if there's no checkpoints made yet
-	for (int j = log_size - 1; j >= begin; j--) {
-		if (log[j]->getType() == END_CKPT) {
-			end = j;
-			break;
+		assert(begin != -1);
+		//find last end checkpoint
+		for (int j = log_size - 1; j >= begin; j--) {
+			if (log[j]->getType() == END_CKPT) {
+				end = j;
+				break;
+			}
 		}
+		assert(end != -1); 
+		
+		//set dirty page table and transaction table to what they were at the end checkpoint
+		ChkptLogRecord* log_end = dynamic_cast<ChkptLogRecord*>(log[end]);
+		dirty_page_table = log_end->getDirtyPageTable();
+		tx_table = log_end->getTxTable();
 	}
-	assert(end != -1); 
-	//set dirty page table and transaction table to what they were at the end checkpoint
-	ChkptLogRecord* log_end = dynamic_cast<ChkptLogRecord*>(log[end]);
-	dirty_page_table = log_end->getDirtyPageTable();
-	tx_table = log_end->getTxTable();
+	else {
+		//clear transaction table and dirty pages table
+		tx_table.clear();
+		dirty_page_table.clear();
+	}
 	
 	//after end, go through the rest of the log and update transaction table and dirty page table
-	for (int i = begin + 1; i < log_size; i++) {
+	for (int i = begin + 1; i < log_size; i++) { //will start at 0 if no checkpoint has been made yet
 		//if we find an end log record, remove that transaction from the transaction table
 		if (log[i]->getType() == END) {
 			int tx = log[i]->getTxID();
