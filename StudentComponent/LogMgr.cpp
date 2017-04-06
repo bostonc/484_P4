@@ -76,7 +76,7 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 	//set dirty page table and transaction table to what they were at the end checkpoint
 	ChkptLogRecord* log_end = dynamic_cast<ChkptLogRecord*>(log[end]);
 	dirty_page_table = log_end->getDirtyPageTable();
-	tx_table = log_end->getDirtyPageTable();
+	tx_table = log_end->getTxTable();
 	
 	//after end, go through the rest of the log and update transaction table and dirty page table
 	for (int i = end + 1; i < log_size; i++) {
@@ -113,11 +113,20 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 		}
 		//if its a redoable log record with a page that's not in the dirty page table, add it
 		//redoable log record = UPDATE, CLR, is that it?
-		if (log[i]->getType() == UPDATE || log[i]->getType() == CLR) {
-			int page_id = log[i]->getPageID();
+		if (log[i]->getType() == UPDATE) {
+			UpdateLogRecord* log_i = dynamic_cast<UpdateLogRecord*>(log[i]);
+			int page_id = log_i->getPageID();
 			if (dirty_page_table.find(page_id) == dirty_page_table.end()) {
 				//add the page to the table
-				dirty_page_table.insert(page_id, log[i]->getLSN());
+				dirty_page_table.insert(page_id, log_i->getLSN());
+			}
+		}
+		else if (log[i]->getType() == CLR) {
+			CompensationLogRecord* log_i = dynamic_cast<CompensationLogRecord*>(log[i]);
+			int page_id = log_i->getPageID();
+			if (dirty_page_table.find(page_id) == dirty_page_table.end()) {
+				//add the page to the table
+				dirty_page_table.insert(page_id, log_i->getLSN());
 			}
 		}
 	}
