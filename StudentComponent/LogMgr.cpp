@@ -228,6 +228,7 @@ bool LogMgr::redo(vector <LogRecord*> log)
 		if (!se->pageWrite(affectedPage, off, text, log[i]->getLSN())) return false;
 	}//end for loop (log scan)	
 
+	//MIGHT NEED TO BE DONE IN MAIN SCAN.........................................!
 	//write end records for all commited tx in the tx_table and erase from table
 	for (map<int, txTableEntry>::iterator it = tx_table.begin(); it != tx_table.end(); ++it)
 	{
@@ -300,9 +301,8 @@ void LogMgr::checkpoint() {
 	ChkptLogRecord* end_checkpoint = new ChkptLogRecord(end_lsn, begin_lsn, NULL_TX, tx_table, dirty_page_table);
 	logtail.push_back(end_checkpoint);
 
-	//Hey I saw you switched stuff, I'm not sure about it
 	//flush the logtail
-	flushLogTail(end_lsn); //UP TO WHICH CHECKPOINT???
+	flushLogTail(begin_lsn); //at time of begin
 	
 	//record master
 	se->store_master(begin_lsn); //should be begin LSN
