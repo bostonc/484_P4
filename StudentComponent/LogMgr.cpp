@@ -191,6 +191,11 @@ bool LogMgr::redo(vector <LogRecord*> log)
 			clr = dynamic_cast<CompensationLogRecord*>(log[i]);
 			affectedPage = clr->getPageID();
 			break;
+		//case COMMIT:
+		//case ABORT:
+		//	//change status/write end record
+		//case END:
+		//	//remove from tx table
 		default:
 			continue;
 		}
@@ -222,6 +227,18 @@ bool LogMgr::redo(vector <LogRecord*> log)
 		//attempt REDO
 		if (!se->pageWrite(affectedPage, off, text, log[i]->getLSN())) return false;
 	}//end for loop (log scan)	
+
+	//write end records for all commited tx in the tx_table and erase from table
+	for (map<int, txTableEntry>::iterator it = tx_table.begin(); it != tx_table.end(); ++it)
+	{
+		if (it->second.status == C)
+		{
+			LogRecord* endRec = new LogRecord(se->nextLSN(), it->second.lastLSN, it->first, END);
+			logtail.push_back(endRec);
+			tx_table.erase(it->first);
+		}
+	}
+
     return true;
 }
 
