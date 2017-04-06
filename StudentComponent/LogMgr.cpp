@@ -163,7 +163,8 @@ bool LogMgr::redo(vector <LogRecord*> log)
 	//	If it yes for all three, redo the record
 	//	Remove committed transactions from table
 	
-	assert((int)log.size() > 0);
+	int log_size = log.size(); //added this because of signed/unsigned compiler warnings
+	assert(log_size > 0);
 
 	map<int, int>* dpt = &dirty_page_table;
 	int startingLSN = NULL_LSN;
@@ -177,7 +178,7 @@ bool LogMgr::redo(vector <LogRecord*> log)
 	}
 
 	//find vector index of log record with startingLSN
-	for (int i = 0; i < (int)log.size(); ++i)
+	for (int i = 0; i < log_size; ++i)
 	{
 		if (log[i]->getLSN() == startingLSN)
 		{
@@ -187,7 +188,7 @@ bool LogMgr::redo(vector <LogRecord*> log)
 	}
 
 	//scan forward starting with startingLogIdx, REDO where necessary
-	for (int i = startingLogIdx; i < (int)log.size(); ++i)
+	for (int i = startingLogIdx; i < log_size; ++i)
 	{
 		//check type, find affected page if applicable
 		int affectedPage = -1;
@@ -361,14 +362,19 @@ void LogMgr::pageFlushed(int page_id)
 * Recover from a crash, given the log from the disk.
 */
 void LogMgr::recover(string log) 
+	//anything else we need to do??
 {
 	//convert to vector
+	vector<LogRecord*> log_record = stringToLRVector(log);
 
 	//analyze
+	analyze(log_record);
 
 	//redo
+	redo(log_record);
 
 	//undo
+	undo(log_record);
 }
 
 /*
