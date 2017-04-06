@@ -15,6 +15,7 @@ LogRecord* getRecordFromLSN_forward(vector <LogRecord*> log, int lsn)
 	{
 		if (log[i]->getLSN() == lsn) return log[i];
 	}
+	return nullptr;
 }
 
 //returns pointer to a log record, given a log vector & a LSN
@@ -25,6 +26,7 @@ LogRecord* getRecordFromLSN_backward(vector <LogRecord*> log, int lsn)
 	{
 		if (log[i]->getLSN() == lsn) return log[i];
 	}
+	return nullptr;
 }
 
 //returns pointer to a log record, given a sorted log vector and a tx_id
@@ -34,6 +36,7 @@ LogRecord* getLatestRecordFromTxId(vector <LogRecord*> log, int txid)
 	{
 		if (log[i]->getTxID() == txid) return log[i];
 	}
+	return nullptr;
 }
 
 
@@ -332,7 +335,8 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 
 		switch (currLog->getType())
 		{
-		case CLR: //WRONG. NEED TO CASE TO CLR AND USE LAST FIELD
+		case CLR:
+		{
 			CompensationLogRecord* curr_clr = dynamic_cast<CompensationLogRecord*>(currLog);
 			if (curr_clr->getUndoNextLSN() != NULL_LSN)
 			{
@@ -345,17 +349,22 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 			logtail.push_back(endRec);
 			ToUndo.pop();
 			continue;
+		}			
 		case UPDATE:
+		{
 			//write CLR
 			UpdateLogRecord* curr_uplr = dynamic_cast<UpdateLogRecord*>(currLog);
 			int nextLSN = se->nextLSN();
 			CompensationLogRecord * clr = new CompensationLogRecord(nextLSN, curr_uplr->getLSN(),
-				curr_uplr->getTxID(), curr_uplr->getPageID(), curr_uplr->getOffset(), 
+				curr_uplr->getTxID(), curr_uplr->getPageID(), curr_uplr->getOffset(),
 				curr_uplr->getBeforeImage(), curr_uplr->getprevLSN()); //MIGHT HAVE BUGS
+			logtail.push_back(clr);
 			//undo action
 			se->pageWrite(curr_uplr->getPageID(), curr_uplr->getOffset(), curr_uplr->getBeforeImage(), nextLSN);
 			break;
-		default: break;
+		}			
+		default: 
+			break;
 		}
 		ToUndo.pop();
 		if (currLog->getprevLSN() != NULL_LSN) ToUndo.push(currLog->getprevLSN());
