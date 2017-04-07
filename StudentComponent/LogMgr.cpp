@@ -89,7 +89,13 @@ void LogMgr::flushLogTail(int maxLSN)
 	cout << "flushing log tail" << endl;
 	//write log records to disk
 	cout << "max lsn = " << maxLSN << endl;
-	for (int i = 0; i <= maxLSN; i++) {
+	int begin_lsn = logtail[0]->getLSN();
+	cout << "begin lsn = " << begin_lsn << endl;
+	int lsn_diff = logtail[1]->getLSN() - begin_lsn;
+	cout << "lsn diff = " << lsn_diff << endl;
+	int loop_end = (maxLSN - begin_lsn) / lsn_diff;
+	cout << "loop end = " << loop_end << endl;
+	for (int i = 0; i <= loop_end; i++) {
 		string log_record = logtail[i]->toString();
 		this->se->updateLog(log_record);
 	}
