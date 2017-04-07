@@ -40,6 +40,16 @@ LogRecord* getLatestRecordFromTxId(vector <LogRecord*> log, int txid)
 	return nullptr;
 }
 
+//returns the index of a log record, given a log and a LSN
+int findRecordIdxWithLSN(vector <LogRecord*> log, int lsn)
+{
+	for (int i = 0; i < (int)log.size(); ++i)
+	{
+		if (log[i]->getLSN() == lsn) return i;
+		if (log[i]->getLSN() > lsn) return i - 1;
+	}
+	return -1;
+}
 
 
 //LogMgr Private functions to implement
@@ -84,13 +94,23 @@ void LogMgr::flushLogTail(int maxLSN)
 	//write log records to disk
 	int begin_lsn = logtail[0]->getLSN();
 	int lsn_diff = logtail[1]->getLSN() - begin_lsn;
-	int loop_end = (maxLSN - begin_lsn) / lsn_diff;
+	int loop_end = (maxLSN - begin_lsn) / lsn_diff;  //OFF BY ONE????
 	for (int i = 0; i <= loop_end; i++) {
 		string log_record = logtail[i]->toString();
 		this->se->updateLog(log_record);
 	}
 	//remove the records from logtail
-	logtail.erase(logtail.begin(), logtail.begin() + loop_end); //OFF BY ONE????
+	logtail.erase(logtail.begin(), logtail.begin() + loop_end);
+
+	////find idx of record with maxLSN
+	//int stopIdx = findRecordIdxWithLSN(logtail, maxLSN); //OFF BY ONE???
+	////write records to disk
+	//for (int i = 0; i <= stopIdx; ++i)
+	//{
+	//	se->updateLog(logtail[i]->toString());
+	//}
+	////erase written records from logtail
+	//logtail.erase(logtail.begin(), logtail.begin() + stopIdx);
 	cout << "logtail flushed." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
@@ -208,8 +228,7 @@ bool LogMgr::redo(vector <LogRecord*> log)
 	//	If it yes for all three, redo the record
 	//	Remove committed transactions from table
 	
-	int log_size = log.size(); //added this because of signed/unsigned compiler warnings
-	assert(log_size > 0);
+	assert((int)log.size() > 0);
 
 	map<int, int>* dpt = &dirty_page_table;
 	int startingLSN = NULL_LSN;
@@ -223,7 +242,7 @@ bool LogMgr::redo(vector <LogRecord*> log)
 	}
 
 	//find vector index of log record with startingLSN
-	for (int i = 0; i < log_size; ++i)
+	for (int i = 0; i < (int)log.size(); ++i)
 	{
 		if (log[i]->getLSN() == startingLSN)
 		{
@@ -233,7 +252,7 @@ bool LogMgr::redo(vector <LogRecord*> log)
 	}
 
 	//scan forward starting with startingLogIdx, REDO where necessary
-	for (int i = startingLogIdx; i < log_size; ++i)
+	for (int i = startingLogIdx; i < (int)log.size(); ++i)
 	{
 		//check type, find affected page if applicable
 		int affectedPage = -1;
