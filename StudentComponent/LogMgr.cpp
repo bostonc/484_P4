@@ -101,7 +101,7 @@ void LogMgr::flushLogTail(int maxLSN)
 	}
 	cout << "after for loop" << endl;
 	//remove the records from logtail
-	logtail.erase(logtail.begin(), logtail.begin() + maxLSN); //OFF BY ONE????
+	logtail.erase(logtail.begin(), logtail.begin() + loop_end); //OFF BY ONE????
 	cout << "after erasing" << endl;
 }
 
