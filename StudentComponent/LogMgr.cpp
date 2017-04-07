@@ -81,7 +81,6 @@ void LogMgr::setLastLSN(int txnum, int lsn)
 */
 void LogMgr::flushLogTail(int maxLSN) 
 {	
-	cout << "flushing logtail..." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
 	//write log records to disk
 	int begin_lsn = logtail[0]->getLSN();
 	int lsn_diff = logtail[1]->getLSN() - begin_lsn;
@@ -289,7 +288,6 @@ bool LogMgr::redo(vector <LogRecord*> log)
 
 	//MIGHT NEED TO BE DONE IN MAIN SCAN.........................................!
 	vector<int> toBeRemoved;
-
 	//write end records for all commited tx in the tx_table and erase from table
 	for (map<int, txTableEntry>::iterator it = tx_table.begin(); it != tx_table.end(); ++it)
 	{
@@ -382,8 +380,19 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 				curr_uplr->getBeforeImage(), curr_uplr->getprevLSN()); //MIGHT HAVE BUGS
 			logtail.push_back(clr);
 			cout << "CLR written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
+
 			//undo action
 			se->pageWrite(curr_uplr->getPageID(), curr_uplr->getOffset(), curr_uplr->getBeforeImage(), nextLSN);
+
+			//write END and continue if prevLSN is null
+			if (curr_uplr->getprevLSN() == NULL_LSN)
+			{
+				LogRecord* eRec = new LogRecord(se->nextLSN(), nextLSN, curr_uplr->getTxID(), END);
+				logtail.push_back(eRec);
+				cout << "END written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!
+				ToUndo.pop();
+				continue;
+			}
 			break;
 		}			
 		default: 
