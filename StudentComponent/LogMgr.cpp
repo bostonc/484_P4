@@ -61,17 +61,26 @@ int findRecordIdxWithLSN(vector <LogRecord*> log, int lsn)
    */
 int LogMgr::getLastLSN(int txnum) 
 {	
-	int logtail_size = logtail.size();
-	LogRecord* log_record;
-	//find most recent log record for this TX
-	for (int i = logtail_size - 1; i >= 0; i--) {
-		log_record = logtail[i];
-		assert(log_record);
-		if (log_record->getTxID() == txnum) {
-			return log_record->getLSN();
-		}
+// 	int logtail_size = logtail.size();
+// 	LogRecord* log_record;
+// 	//find most recent log record for this TX
+// 	for (int i = logtail_size - 1; i >= 0; i--) {
+// 		log_record = logtail[i];
+// 		assert(log_record);
+// 		if (log_record->getTxID() == txnum) {
+// 			return log_record->getLSN();
+// 		}
+// 	}
+// 	return NULL_LSN;
+	
+	if (tx_table.find(txnum) != tx_table.end()) {
+		//it's in tx table
+		return tx_table[txnum].lastLSN;
 	}
-	return NULL_LSN;
+	else {
+		//it's not in tx table
+		return NULL_LSN;
+	}
 }
 
 /*
