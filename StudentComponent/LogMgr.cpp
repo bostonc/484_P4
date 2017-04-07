@@ -387,6 +387,8 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 			logtail.push_back(endRec);
 			cout << "END written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!
 			ToUndo.pop();
+			//erase transaction from tx table after END
+			tx_table.erase(curr_clr->getTxID());
 			continue;
 		}			
 		case UPDATE:
@@ -410,6 +412,8 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 				logtail.push_back(eRec);
 				cout << "END written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!
 				ToUndo.pop();
+				//erase transaction from tx table after END
+				tx_table.erase(curr_uplr->getTxID());
 				continue;
 			}
 			break;
