@@ -107,6 +107,14 @@
     <ClInclude Include="studentcomponent\LogMgr.h" />
     <ClInclude Include="studentcomponent\LogRecord.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="testcases\test00" />
+    <None Include="testcases\test01" />
+    <None Include="testcases\test02" />
+    <None Include="testcases\test03" />
+    <None Include="testcases\test04" />
+    <None Include="testcases\test05" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -4,7 +4,7 @@
 #include <vector>
 #include <sstream>
 #include <string>
-//#include <iostream> //DELETE BEFORE SUBMITTING!!!
+#include <iostream> //DELETE BEFORE SUBMITTING!!!
 
 //Helper Functions
 
@@ -81,6 +81,7 @@ void LogMgr::setLastLSN(int txnum, int lsn)
 */
 void LogMgr::flushLogTail(int maxLSN) 
 {	
+	cout << "flushing logtail..." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
 	//write log records to disk
 	int begin_lsn = logtail[0]->getLSN();
 	int lsn_diff = logtail[1]->getLSN() - begin_lsn;
@@ -91,12 +92,14 @@ void LogMgr::flushLogTail(int maxLSN)
 	}
 	//remove the records from logtail
 	logtail.erase(logtail.begin(), logtail.begin() + loop_end); //OFF BY ONE????
+	cout << "logtail flushed." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 /* 
 * Run the analysis phase of ARIES.
 */
 void LogMgr::analyze(vector <LogRecord*> log) {
+	cout << "==Begin Analysis==" << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
 	//find last begin checkpoint
 	int log_size = log.size();
 	int begin = -1;
@@ -186,7 +189,7 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 		}
 	}
 		
-
+	cout << "==End Analysis==" << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 /*
@@ -196,6 +199,8 @@ void LogMgr::analyze(vector <LogRecord*> log) {
 */
 bool LogMgr::redo(vector <LogRecord*> log) 
 {	
+	cout << "==Begin Redo==" << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
+
 	//Find oldest update in log(smallest recLSN) and start at that point in the log
 	//	For each redoable record :
 	//Is the page in dirty page table ?
@@ -292,6 +297,7 @@ bool LogMgr::redo(vector <LogRecord*> log)
 		{
 			LogRecord* endRec = new LogRecord(se->nextLSN(), it->second.lastLSN, it->first, END);
 			logtail.push_back(endRec);
+			cout << "END written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
 			//tx_table.erase(it->first);
 			toBeRemoved.push_back(it->first);
 		}
@@ -302,6 +308,7 @@ bool LogMgr::redo(vector <LogRecord*> log)
 	}
 	toBeRemoved.clear();
 
+	cout << "==End Redo==" << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     return true;
 }
 
@@ -312,7 +319,8 @@ bool LogMgr::redo(vector <LogRecord*> log)
 */
 void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_TX
 { 
-	
+	cout << "==Begin Undo==" << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
+
 	//Undo all in the transaction table starting with the transaction with the largest LSN value in transaction table
 	//	For each record :
 	//If update :
@@ -360,6 +368,7 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 			//write end record
 			LogRecord* endRec = new LogRecord(se->nextLSN(), curr_clr->getLSN(), curr_clr->getTxID(), END);
 			logtail.push_back(endRec);
+			cout << "END written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!
 			ToUndo.pop();
 			continue;
 		}			
@@ -372,6 +381,7 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 				curr_uplr->getTxID(), curr_uplr->getPageID(), curr_uplr->getOffset(),
 				curr_uplr->getBeforeImage(), curr_uplr->getprevLSN()); //MIGHT HAVE BUGS
 			logtail.push_back(clr);
+			cout << "CLR written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
 			//undo action
 			se->pageWrite(curr_uplr->getPageID(), curr_uplr->getOffset(), curr_uplr->getBeforeImage(), nextLSN);
 			break;
@@ -382,6 +392,8 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 		ToUndo.pop();
 		if (currLog->getprevLSN() != NULL_LSN) ToUndo.push(currLog->getprevLSN());
 	} //end backwards scan (while loop)
+
+	cout << "==End Undo==" << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 vector<LogRecord*> LogMgr::stringToLRVector(string logstring) {
@@ -408,6 +420,7 @@ vector<LogRecord*> LogMgr::stringToLRVector(string logstring) {
 */
 void LogMgr::abort(int txid) 
 {
+	cout << "Abort called" << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!
 	undo(logtail, txid);
 	//ANY CLR ENTRIES SHOULD BE CREATED IN UNDO, NOT HERE.....................
 }
@@ -416,7 +429,8 @@ void LogMgr::abort(int txid)
 * Write the begin checkpoint and end checkpoint
 */
 void LogMgr::checkpoint() {
-	
+	cout << "Writing checkpoint..." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
+
 	//write begin checkpoint to the logtail
 	int begin_lsn = se->nextLSN();
 	LogRecord* begin_checkpoint = new LogRecord(begin_lsn, NULL_LSN, NULL_TX, BEGIN_CKPT);
@@ -432,6 +446,8 @@ void LogMgr::checkpoint() {
 	
 	//record master
 	se->store_master(begin_lsn); //should be begin LSN
+
+	cout << "Checkpoint written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 /*
@@ -439,7 +455,8 @@ void LogMgr::checkpoint() {
 */
 void LogMgr::commit(int txid) 
 { //see pg 574 of textbook edition 2
-	
+	cout << "Committing tx_" << txid << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
+
 	//change status
 	tx_table[txid].status = C;
 
@@ -459,6 +476,7 @@ void LogMgr::commit(int txid)
 
 	//remove transaction from tx table
 	tx_table.erase(txid);
+	cout << "Commit of tx_" << txid << " finished." << endl; //DELETE ME!!!!!!!!!!!!
 }
 
 /*
@@ -468,7 +486,7 @@ void LogMgr::commit(int txid)
 */
 void LogMgr::pageFlushed(int page_id) 
 {
-	
+	cout << "Flushing Page " << page_id << endl; //DELETE ME!!!!!!!!!!!!!!!!!!
 	flushLogTail(se->getLSN(page_id));
 	dirty_page_table.erase(page_id);
 }
@@ -478,6 +496,7 @@ void LogMgr::pageFlushed(int page_id)
 */
 void LogMgr::recover(string log) 
 {
+	cout << "#### Begin recovery ####" << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
 	
 	//convert to vector
 	vector<LogRecord*> log_record = stringToLRVector(log);
@@ -486,10 +505,16 @@ void LogMgr::recover(string log)
 	analyze(log_record);
 
 	//redo
-	if (!redo(log_record)) return;
+	if (!redo(log_record))
+	{
+		cout << "Redo couldn't finish!" << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!
+		return;
+	}
 
 	//undo
 	undo(log_record);
+
+	cout << "#### Successful recovery. :) ####" << endl;
 }
 
 /*
@@ -498,7 +523,8 @@ void LogMgr::recover(string log)
 */
 int LogMgr::write(int txid, int page_id, int offset, string input, string oldtext) 
 {
-	
+	cout << "Beginning update..." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
+
 	//write update record
 	int newLSN = se->nextLSN();
 	UpdateLogRecord* uRec = new UpdateLogRecord(newLSN, getLastLSN(txid), txid, page_id, offset, oldtext, input);
@@ -517,7 +543,9 @@ int LogMgr::write(int txid, int page_id, int offset, string input, string oldtex
 	{
 		dirty_page_table[page_id] = newLSN;
 	}
-    return newLSN;
+
+	cout << "Update finished." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
+    return newLSN;	
 }
 
 /*
@@ -526,6 +554,7 @@ int LogMgr::write(int txid, int page_id, int offset, string input, string oldtex
 void LogMgr::setStorageEngine(StorageEngine* engine) 
 {
 	this->se = engine;
+	cout << "INITIALIZED" << endl;
 }
 
 

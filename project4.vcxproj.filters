@@ -39,4 +39,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="testcases\test00">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="testcases\test01">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="testcases\test02">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="testcases\test03">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="testcases\test04">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="testcases\test05">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
