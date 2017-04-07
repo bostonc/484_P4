@@ -88,6 +88,7 @@ void LogMgr::flushLogTail(int maxLSN)
 {	
 	cout << "flushing log tail" << endl;
 	//write log records to disk
+	cout << "max lsn = " << maxLSN < endl;
 	for (int i = 0; i <= maxLSN; i++) {
 		string log_record = logtail[i]->toString();
 		this->se->updateLog(log_record);
