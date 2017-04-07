@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cassert>
 
 using namespace std;
 
@@ -39,6 +40,7 @@ void runTestcase(string filename) {
   //open testcase file filename
   ifstream myfile;
   myfile.open(filename);
+  assert(myfile.is_open());
   //The first line of the testcase tells you the filename for the database.
   string db_filename;
   getline(myfile, db_filename);

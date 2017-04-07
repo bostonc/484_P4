@@ -283,6 +283,8 @@ bool LogMgr::redo(vector <LogRecord*> log)
 	}//end for loop (log scan)	
 
 	//MIGHT NEED TO BE DONE IN MAIN SCAN.........................................!
+	vector<int> toBeRemoved;
+
 	//write end records for all commited tx in the tx_table and erase from table
 	for (map<int, txTableEntry>::iterator it = tx_table.begin(); it != tx_table.end(); ++it)
 	{
@@ -290,9 +292,15 @@ bool LogMgr::redo(vector <LogRecord*> log)
 		{
 			LogRecord* endRec = new LogRecord(se->nextLSN(), it->second.lastLSN, it->first, END);
 			logtail.push_back(endRec);
-			tx_table.erase(it->first);
+			//tx_table.erase(it->first);
+			toBeRemoved.push_back(it->first);
 		}
 	}
+	for (int i = 0; i < (int)toBeRemoved.size(); ++i)
+	{
+		tx_table.erase(toBeRemoved[i]);
+	}
+	toBeRemoved.clear();
 
     return true;
 }
