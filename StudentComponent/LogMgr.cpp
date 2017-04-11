@@ -368,6 +368,7 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 	//create ToUndo
 	priority_queue<int> ToUndo;
 	LogRecord* currLog;
+	int abortLSN = -1;
 	if (txnum == NULL_TX)
 	{	//initialize for undo phase
 		for (map<int, txTableEntry>::iterator it = tx_table.begin(); it != tx_table.end(); ++it)
@@ -377,10 +378,19 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 	}
 	else
 	{	//initialize for single abort.
-		//find targetLog with tx_id
-		currLog = getLatestRecordFromTxId(log, txnum);
-		//add largeset LSN of targetLog to ToUndo
-		ToUndo.push(currLog->getLSN());
+		//1) if it's in the tx_table, use that. 
+		//3) Otherwise, check the log
+		log.insert(log.end(), logtail.begin(), logtail.end());
+		try
+		{	//1
+			abortLSN = tx_table.at(txnum).lastLSN;			
+		}
+		catch (const std::out_of_range& e)
+		{	
+			//2
+			currLog = getLatestRecordFromTxId(log, txnum);
+		}
+		ToUndo.push(abortLSN);
 	}
 
 	//scan backwards from startingLSN
@@ -403,6 +413,7 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 			//write end record
 			LogRecord* endRec = new LogRecord(se->nextLSN(), curr_clr->getLSN(), curr_clr->getTxID(), END);
 			logtail.push_back(endRec);
+			tx_table[endRec->getTxID()].lastLSN = endRec->getLSN();
 			cout << "END written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!
 			ToUndo.pop();
 			//erase transaction from tx table after END
@@ -414,10 +425,14 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 			//write CLR
 			UpdateLogRecord* curr_uplr = dynamic_cast<UpdateLogRecord*>(currLog);
 			int nextLSN = se->nextLSN();
-			CompensationLogRecord * clr = new CompensationLogRecord(nextLSN, curr_uplr->getLSN(),
+			//CompensationLogRecord * clr = new CompensationLogRecord(nextLSN, curr_uplr->getLSN(),
+			//	curr_uplr->getTxID(), curr_uplr->getPageID(), curr_uplr->getOffset(),
+			//	curr_uplr->getBeforeImage(), curr_uplr->getprevLSN()); //MIGHT HAVE BUGS
+			CompensationLogRecord * clr = new CompensationLogRecord(nextLSN, getLastLSN(curr_uplr->getTxID()),
 				curr_uplr->getTxID(), curr_uplr->getPageID(), curr_uplr->getOffset(),
-				curr_uplr->getBeforeImage(), curr_uplr->getprevLSN()); //MIGHT HAVE BUGS
+				curr_uplr->getBeforeImage(), curr_uplr->getprevLSN());
 			logtail.push_back(clr);
+			tx_table[clr->getTxID()].lastLSN = clr->getLSN();
 			cout << "CLR written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
 
 			//undo action
@@ -428,6 +443,7 @@ void LogMgr::undo(vector <LogRecord*> log, int txnum) //declared: txnum = NULL_T
 			{
 				LogRecord* eRec = new LogRecord(se->nextLSN(), nextLSN, curr_uplr->getTxID(), END);
 				logtail.push_back(eRec);
+				tx_table[eRec->getTxID()].lastLSN = eRec->getLSN();
 				cout << "END written." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!
 				ToUndo.pop();
 				//erase transaction from tx table after END
@@ -471,8 +487,20 @@ vector<LogRecord*> LogMgr::stringToLRVector(string logstring) {
 void LogMgr::abort(int txid) 
 {
 	cout << "Abort called" << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!
-	undo(logtail, txid);
-	//ANY CLR ENTRIES SHOULD BE CREATED IN UNDO, NOT HERE.....................
+	//ANY CLR ENTRIES SHOULD BE CREATED IN UNDO, NOT HERE.
+
+	//write ABORT log
+	int nextLSN = se->nextLSN();
+	LogRecord* aRec = new LogRecord(nextLSN, tx_table[txid].lastLSN, txid, ABORT);
+	logtail.push_back(aRec);
+	tx_table[txid].lastLSN = nextLSN;
+
+	undo(stringToLRVector(se->getLog()), txid);
+	
+
+	//Write END???????????????????????????????????????????????????????????????
+
+
 }
 
 /*
@@ -492,7 +520,8 @@ void LogMgr::checkpoint() {
 	logtail.push_back(end_checkpoint);
 
 	//flush the logtail
-	flushLogTail(begin_lsn); //at time of begin
+	//flushLogTail(begin_lsn); //at time of begin
+	flushLogTail(end_lsn);
 	
 	//record master
 	se->store_master(begin_lsn); //should be begin LSN
