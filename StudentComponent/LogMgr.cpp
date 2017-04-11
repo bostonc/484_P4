@@ -43,6 +43,8 @@ LogRecord* getLatestRecordFromTxId(vector <LogRecord*> log, int txid)
 //returns the index of a log record, given a log and a LSN
 int findRecordIdxWithLSN(vector <LogRecord*> log, int lsn)
 {
+	assert(log.size() >= 0);
+	if (log.size() == 1 && log[0]->getLSN() > lsn) return 0;
 	for (int i = 0; i < (int)log.size(); ++i)
 	{
 		if (log[i]->getLSN() == lsn) return i;
@@ -127,7 +129,7 @@ void LogMgr::flushLogTail(int maxLSN)
 	cout << "Logtail flushed. Before: " << debugBeforeSize
 		<< ", After: " << logtail.size() << ", Intended: " 
 		<< debugCount << ", Actual: " << debugBeforeSize - logtail.size() 
-		<< endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		<< endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 /* 
@@ -571,7 +573,7 @@ void LogMgr::recover(string log)
 */
 int LogMgr::write(int txid, int page_id, int offset, string input, string oldtext) 
 {
-	cout << "Beginning update..." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
+	//cout << "Beginning update..." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
 
 	//write update record
 	int newLSN = se->nextLSN();
@@ -592,7 +594,7 @@ int LogMgr::write(int txid, int page_id, int offset, string input, string oldtex
 		dirty_page_table[page_id] = newLSN;
 	}
 
-	cout << "Update finished." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
+	cout << "Update complete." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!
     return newLSN;	
 }
 
