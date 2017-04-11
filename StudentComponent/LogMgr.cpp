@@ -101,26 +101,33 @@ void LogMgr::setLastLSN(int txnum, int lsn)
 void LogMgr::flushLogTail(int maxLSN) 
 {	
 	//write log records to disk
-	int begin_lsn = logtail[0]->getLSN();
-	int lsn_diff = logtail[1]->getLSN() - begin_lsn;
-	int loop_end = (maxLSN - begin_lsn) / lsn_diff;  //OFF BY ONE????
-	for (int i = 0; i <= loop_end; i++) {
-		string log_record = logtail[i]->toString();
-		this->se->updateLog(log_record);
-	}
-	//remove the records from logtail
-	logtail.erase(logtail.begin(), logtail.begin() + loop_end);
-
-	////find idx of record with maxLSN
-	//int stopIdx = findRecordIdxWithLSN(logtail, maxLSN); //OFF BY ONE???
-	////write records to disk
-	//for (int i = 0; i <= stopIdx; ++i)
-	//{
-	//	se->updateLog(logtail[i]->toString());
+	//int begin_lsn = logtail[0]->getLSN();
+	//int lsn_diff = logtail[1]->getLSN() - begin_lsn;
+	//int loop_end = (maxLSN - begin_lsn) / lsn_diff;  //OFF BY ONE????
+	//for (int i = 0; i <= loop_end; i++) {
+	//	string log_record = logtail[i]->toString();
+	//	this->se->updateLog(log_record);
 	//}
-	////erase written records from logtail
-	//logtail.erase(logtail.begin(), logtail.begin() + stopIdx);
-	cout << "logtail flushed." << endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	////remove the records from logtail
+	//logtail.erase(logtail.begin(), logtail.begin() + loop_end);
+
+
+	int debugCount = 0; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	int debugBeforeSize = (int)logtail.size(); //DELETE ME!!!!!!!!!!!!!!!!!!!!!
+	//find idx of record with maxLSN
+	int stopIdx = findRecordIdxWithLSN(logtail, maxLSN); //OFF BY ONE???
+	//write records to disk
+	for (int i = 0; i <= stopIdx; ++i)
+	{
+		se->updateLog(logtail[i]->toString());
+		debugCount++;
+	}
+	//erase written records from logtail
+	logtail.erase(logtail.begin(), logtail.begin() + stopIdx + 1);
+	cout << "Logtail flushed. Before: " << debugBeforeSize
+		<< ", After: " << logtail.size() << ", Intended: " 
+		<< debugCount << ", Actual: " << debugBeforeSize - logtail.size() 
+		<< endl; //DELETE ME!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 /* 
